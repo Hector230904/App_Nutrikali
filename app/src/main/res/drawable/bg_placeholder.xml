@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Placeholder background (transparent white) - replace with your PNG in res/drawable or mipmap -->
+    <solid android:color="#00FFFFFF" />
+</shape>
+

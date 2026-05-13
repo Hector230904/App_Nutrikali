@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark green triangle for top-left background -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="145dp"
+    android:viewportWidth="360"
+    android:viewportHeight="260">
+
+    <path
+        android:fillColor="#149C68"
+        android:pathData="M0,0 L360,0 L0,260 Z" />
+
+</vector>
+
