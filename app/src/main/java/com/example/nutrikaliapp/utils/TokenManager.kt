@@ -3,41 +3,51 @@ package com.example.nutrikaliapp.utils
 import android.content.Context
 import android.content.SharedPreferences
 
-class TokenManager(context: Context) {
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("nutrikali_prefs", Context.MODE_PRIVATE)
+object TokenManager {
+    private const val PREFS_NAME = "nutrikali_prefs"
+    private const val KEY_TOKEN = "jwt_token"
+    private const val KEY_USER_EMAIL = "user_email"
+    private const val KEY_USER_NAME = "user_name"
 
-    companion object {
-        private const val TOKEN_KEY = "jwt_token"
-        private const val USER_EMAIL_KEY = "user_email"
-        private const val USER_NAME_KEY = "user_name"
+    private lateinit var prefs: SharedPreferences
+
+    fun init(context: Context) {
+        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun saveToken(token: String) {
-        sharedPreferences.edit().putString(TOKEN_KEY, token).apply()
-    }
+    // Token JWT
+    var token: String?
+        get() = if (::prefs.isInitialized) prefs.getString(KEY_TOKEN, null) else null
+        set(value) {
+            if (::prefs.isInitialized) {
+                prefs.edit().putString(KEY_TOKEN, value).apply()
+            }
+        }
 
-    fun getToken(): String? {
-        return sharedPreferences.getString(TOKEN_KEY, null)
-    }
+    // Email del usuario
+    var userEmail: String?
+        get() = if (::prefs.isInitialized) prefs.getString(KEY_USER_EMAIL, null) else null
+        set(value) {
+            if (::prefs.isInitialized) {
+                prefs.edit().putString(KEY_USER_EMAIL, value).apply()
+            }
+        }
 
-    fun saveUserInfo(email: String, name: String?) {
-        sharedPreferences.edit()
-            .putString(USER_EMAIL_KEY, email)
-            .putString(USER_NAME_KEY, name ?: "")
-            .apply()
-    }
+    // Nombre del usuario
+    var userName: String?
+        get() = if (::prefs.isInitialized) prefs.getString(KEY_USER_NAME, null) else null
+        set(value) {
+            if (::prefs.isInitialized) {
+                prefs.edit().putString(KEY_USER_NAME, value).apply()
+            }
+        }
 
-    fun getUserEmail(): String? {
-        return sharedPreferences.getString(USER_EMAIL_KEY, null)
-    }
+    // Verificar si hay sesión iniciada
+    fun isLoggedIn(): Boolean = !token.isNullOrEmpty()
 
-    fun clearAll() {
-        sharedPreferences.edit().clear().apply()
-    }
-
-    fun isLoggedIn(): Boolean {
-        return getToken() != null
+    // Limpiar todo (logout)
+    fun clear() {
+        prefs.edit().clear().apply()
     }
 }
 

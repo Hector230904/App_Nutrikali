@@ -12,14 +12,12 @@ import com.example.nutrikaliapp.utils.TokenManager
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var tokenManager: TokenManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        tokenManager = TokenManager(this)
-
-        if (!tokenManager.isLoggedIn()) {
+        // Verificar si hay sesión
+        if (!TokenManager.isLoggedIn()) {
             redirectToLogin()
             return
         }
@@ -28,11 +26,11 @@ class HomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // Saludo personalizado
-        val userEmail = tokenManager.getUserEmail()
-        val userName = userEmail?.split("@")?.first() ?: "Usuario"
+        val userEmail = TokenManager.userEmail ?: "usuario@mail.com"
+        val userName = userEmail.split("@").first()
         binding.greetingTextView.text = getString(R.string.greeting_message, userName)
 
-        //  Búsqueda: al hacer clic en el ícono, abre DietsActivity con el texto de búsqueda
+        // Búsqueda: al hacer clic en el ícono, abre DietsActivity con el texto de búsqueda
         binding.searchIcon.setOnClickListener {
             val query = binding.searchEditText.text.toString().trim()
             if (query.isEmpty()) {
@@ -92,7 +90,7 @@ class HomeActivity : AppCompatActivity() {
             .setTitle(R.string.exit_title)
             .setMessage(R.string.exit_message)
             .setPositiveButton(R.string.yes) { _, _ ->
-                tokenManager.clearAll()
+                TokenManager.clear()   // Limpia token, email, nombre
                 finishAffinity()
             }
             .setNegativeButton(R.string.no, null)

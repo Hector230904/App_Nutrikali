@@ -1,31 +1,39 @@
 package com.example.nutrikaliapp.models
 
-import com.example.nutrikaliapp.UserData
+import com.google.gson.annotations.SerializedName
 
+// ------ Auth ------
 data class LoginRequest(
-    val email: String,
-    val password: String
+    @SerializedName("correo") val email: String,
+    @SerializedName("contraseña") val password: String
 )
 
 data class RegisterRequest(
-    val email: String,
-    val password: String,
-    val name: String? = null
+    @SerializedName("nombre") val name: String,
+    @SerializedName("correo") val email: String,
+    @SerializedName("contraseña") val password: String,
+    @SerializedName("edad") val age: Int? = null,
+    @SerializedName("peso") val weight: Double? = null,
+    @SerializedName("estatura") val height: Double? = null,
+    @SerializedName("objetivo") val goal: String? = null
 )
 
 data class AuthResponse(
-    val message: String,
-    val token: String,
-    val user: UserData
+    val success: Boolean,
+    val message: String?,
+    val token: String?,
+    val usuario: UserData?,
+    // para errores
+    val error: String? = null
 )
 
 data class UserData(
-    val id: Int,
-    val email: String,
-    val name: String?
-)
-
-data class AuthError(
-    val error: String
+    @SerializedName("id_usuario") val id: Int,
+    @SerializedName("nombre") val name: String,
+    @SerializedName("correo") val email: String,
+    val edad: Int?,
+    val peso: Double?,
+    val estatura: Double?,
+    val objetivo: String?
 )
 

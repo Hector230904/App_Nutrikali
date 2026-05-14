@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".MyApplication"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -21,6 +22,7 @@
         <activity android:name=".ProfileActivity" />
         <activity android:name=".CalendarActivity" />
         <activity android:name=".DietsActivity" />
+
 
         
         <activity
@@ -37,5 +39,6 @@
             </intent-filter>
         </activity>
     </application>
+
 
 </manifest>

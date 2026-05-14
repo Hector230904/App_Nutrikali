@@ -117,4 +117,19 @@ class DietsActivity : AppCompatActivity() {
             .setPositiveButton(R.string.accept, null)
             .show()
     }
+
+    private fun loadFoods() {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.getFoods(page = 1, limit = 50)
+                if (response.success) {
+                    foodAdapter.updateData(response.data)
+                } else {
+                    // mostrar error
+                }
+            } catch (e: Exception) {
+                // manejar excepción de red
+            }
+        }
+    }
 }

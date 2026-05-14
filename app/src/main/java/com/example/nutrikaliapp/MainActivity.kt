@@ -28,7 +28,6 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var tokenManager: TokenManager
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,10 +35,11 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        tokenManager = TokenManager(this)
+        // Inicializar el TokenManager una sola vez
+        TokenManager.init(applicationContext)
 
-        // Si ya hay sesión iniciada, ir directamente al home
-        if (tokenManager.isLoggedIn()) {
+        // Si ya hay token guardado, ir al home
+        if (!TokenManager.token.isNullOrEmpty()) {
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
             return
@@ -91,9 +91,13 @@ class MainActivity : AppCompatActivity() {
                 val response = RetrofitClient.apiService.login(LoginRequest(email, password))
                 withContext(Dispatchers.Main) {
                     showLoading(false)
-                    tokenManager.saveToken(response.token)
-                    tokenManager.saveUserInfo(response.user.email, response.user.name)
-                    Toast.makeText(this@MainActivity, "Bienvenido ${response.user.name ?: response.user.email}", Toast.LENGTH_SHORT).show()
+                    // Guardar token y datos del usuario
+                    TokenManager.token = response.token
+                    TokenManager.userEmail = response.usuario?.email   // ← añadido
+                    TokenManager.userName = response.usuario?.name     // ← añadido
+
+                    val nombre = response.usuario?.name ?: "Usuario"
+                    Toast.makeText(this@MainActivity, "Bienvenido $nombre", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this@MainActivity, HomeActivity::class.java))
                     finish()
                 }
@@ -101,7 +105,8 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     showLoading(false)
                     val errorBody = e.response()?.errorBody()?.string()
-                    val errorMsg = if (errorBody?.contains("Invalid credentials") == true) "Correo o contraseña incorrectos"
+                    val errorMsg = if (errorBody?.contains("Credenciales inválidas") == true)
+                        "Correo o contraseña incorrectos"
                     else "Error de autenticación: ${e.message()}"
                     Toast.makeText(this@MainActivity, errorMsg, Toast.LENGTH_SHORT).show()
                 }
@@ -136,7 +141,7 @@ class MainActivity : AppCompatActivity() {
         regBtn.setOnClickListener {
             val email = regEmail.text?.toString()?.trim().orEmpty()
             val password = regPassword.text?.toString().orEmpty()
-            val name = regName?.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val name = regName?.text?.toString()?.trim()?.takeIf { it.isNotEmpty() } ?: ""
 
             if (email.isEmpty() || password.length < 6) {
                 Toast.makeText(this, "Correo y contraseña (mínimo 6 caracteres) requeridos", Toast.LENGTH_SHORT).show()
@@ -146,12 +151,18 @@ class MainActivity : AppCompatActivity() {
             showLoading(true)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val response = RetrofitClient.apiService.register(RegisterRequest(email, password, name))
+                    val response = RetrofitClient.apiService.register(
+                        RegisterRequest(name = name, email = email, password = password)
+                    )
                     withContext(Dispatchers.Main) {
                         showLoading(false)
-                        tokenManager.saveToken(response.token)
-                        tokenManager.saveUserInfo(response.user.email, response.user.name)
-                        Toast.makeText(this@MainActivity, "Registro exitoso. Bienvenido!", Toast.LENGTH_SHORT).show()
+                        // Guardar token y datos del usuario
+                        TokenManager.token = response.token
+                        TokenManager.userEmail = response.usuario?.email   // ← añadido
+                        TokenManager.userName = response.usuario?.name     // ← añadido
+
+                        val nombre = response.usuario?.name ?: "Usuario"
+                        Toast.makeText(this@MainActivity, "Registro exitoso. ¡Bienvenido $nombre!", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                         startActivity(Intent(this@MainActivity, HomeActivity::class.java))
                         finish()
@@ -190,7 +201,6 @@ class MainActivity : AppCompatActivity() {
                 if (email.isEmpty()) {
                     Toast.makeText(this, "Ingrese un correo", Toast.LENGTH_SHORT).show()
                 } else {
-                    // Aquí puedes implementar la llamada a tu API de recuperación
                     Toast.makeText(this, "Si el correo existe, recibirás instrucciones", Toast.LENGTH_SHORT).show()
                 }
             }
