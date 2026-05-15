@@ -1,5 +1,6 @@
 package com.example.nutrikaliapp.network
 
+import android.util.Log   // ✅ Importación necesaria
 import com.example.nutrikaliapp.utils.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -9,10 +10,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Para emulador: 10.0.2.2 es localhost. Para dispositivo físico: IP de tu máquina
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    // ⚠️ Cambia esta URL según tu entorno:
+    // - Emulador estándar: "http://10.0.2.2:3000/"
+    // - Dispositivo físico o emulador lento: usa la IP real de tu PC (ej. "http://192.168.1.100:3000/")
+    private const val BASE_URL = "http://localhost:3000/"
 
-    // Interceptor que añade el token JWT a todas las peticiones
+    // Interceptor para añadir token JWT
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
         val token = TokenManager.token
@@ -26,17 +29,28 @@ object RetrofitClient {
         chain.proceed(request)
     }
 
-    // Interceptor para logs (útil en desarrollo)
+    // Interceptor de logs (útil para depurar)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
+    // Cliente OkHttp único y bien configurado
     private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(authInterceptor)      // primero autenticación
-        .addInterceptor(loggingInterceptor)   // luego logging
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(authInterceptor)
+        .addInterceptor(loggingInterceptor)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .addInterceptor { chain ->
+            val request = chain.request()
+            try {
+                chain.proceed(request)
+            } catch (e: Exception) {
+                Log.e("Retrofit", "Request failed: ${request.url}", e)
+                throw e
+            }
+        }
         .build()
 
     private val retrofit = Retrofit.Builder()

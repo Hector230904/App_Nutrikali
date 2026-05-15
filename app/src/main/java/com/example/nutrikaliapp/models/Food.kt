@@ -11,6 +11,7 @@ data class Food(
     @SerializedName("grasas") val fat: Double
 )
 
+
 // Wrappers de respuesta (paginada y búsqueda)
 data class FoodsResponse(
     val success: Boolean,

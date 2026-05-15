@@ -11,7 +11,6 @@ import com.example.nutrikaliapp.utils.TokenManager
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
-    private lateinit var tokenManager: TokenManager
     private lateinit var sharedPrefs: SharedPreferences
 
     companion object {
@@ -26,7 +25,7 @@ class ProfileActivity : AppCompatActivity() {
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        tokenManager = TokenManager(this)
+        // Ya no se instancia TokenManager, usamos el objeto directamente
         sharedPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         // Cargar datos del usuario logueado
@@ -52,8 +51,9 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun loadUserData() {
-        val userEmail = tokenManager.getUserEmail()
-        val userName = userEmail?.split("@")?.first() ?: "Usuario"
+        // Obtenemos los datos directamente del TokenManager
+        val userEmail = TokenManager.userEmail ?: "correo@ejemplo.com"
+        val userName = TokenManager.userName ?: userEmail.split("@").first()
 
         binding.userNameTextView.text = userName
         binding.emailEditText.setText(userEmail)

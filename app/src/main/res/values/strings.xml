@@ -6,7 +6,7 @@
 
     <!-- ==================== LOGIN / REGISTRO ==================== -->
     <string name="label_title">NUTRIKALI</string>
-    <string name="label_username">Usuario</string>
+    <string name="label_username">Correo</string>
     <string name="label_password">Contraseña</string>
     <string name="link_forgot">Olvidaste tu contraseña</string>
     <string name="link_register">Registro</string>
@@ -53,6 +53,12 @@
     <string name="nutrition_info">Información por 100g</string>
     <string name="food_details_title">Detalles del alimento</string>
     <string name="accept">Aceptar</string>
+
+
+    <string name="diets_title">DIETAS</string>
+    <string name="error_loading_foods">Error al cargar alimentos</string>
+    <string name="error_network">Error de red</string>
+
 
     <!-- ==================== TEXTO DE EJEMPLO (LOREM) ==================== -->
     <string name="lorem_ipsum">

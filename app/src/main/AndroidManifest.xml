@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NutrikaliApp">
 
+
         <activity android:name=".CalculatorActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".CalendarActivity" />

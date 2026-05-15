@@ -213,4 +213,5 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.loginButton).isEnabled = !show
         findViewById<TextView>(R.id.registerTextView).isEnabled = !show
     }
+
 }

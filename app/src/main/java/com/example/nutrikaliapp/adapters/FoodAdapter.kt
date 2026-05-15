@@ -12,7 +12,9 @@ class FoodAdapter(
 ) : RecyclerView.Adapter<FoodAdapter.FoodViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FoodViewHolder {
-        val binding = ItemFoodBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemFoodBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
         return FoodViewHolder(binding, onItemClick)
     }
 
@@ -22,11 +24,11 @@ class FoodAdapter(
 
     override fun getItemCount(): Int = foods.size
 
-    // Metodo opcional (si no se usa, puedes eliminarlo o mantenerlo comentado)
-    // fun updateData(newFoods: List<Food>) {
-    //     foods = newFoods
-    //     notifyDataSetChanged()
-    // }
+    /** Método para actualizar la lista desde la API */
+    fun updateData(newFoods: List<Food>) {
+        foods = newFoods
+        notifyDataSetChanged()
+    }
 
     class FoodViewHolder(
         private val binding: ItemFoodBinding,
@@ -35,7 +37,6 @@ class FoodAdapter(
 
         fun bind(food: Food) {
             binding.foodNameTextView.text = food.name
-            // Usamos setText con String (no hay forma de evitar concatenación aquí sin recursos)
             binding.caloriesTextView.text = "${food.calories} kcal"
             binding.proteinTextView.text = "${food.protein} g"
             binding.carbsTextView.text = "${food.carbs} g"

@@ -6,6 +6,7 @@ import com.example.nutrikaliapp.FoodsResponse
 import com.example.nutrikaliapp.models.AuthResponse
 import com.example.nutrikaliapp.models.LoginRequest
 import com.example.nutrikaliapp.models.RegisterRequest
+import retrofit2.Response          // ✅ Línea agregada
 import retrofit2.http.*
 
 interface ApiService {
@@ -18,7 +19,7 @@ interface ApiService {
     suspend fun register(@Body request: RegisterRequest): AuthResponse
 
     @GET("api/auth/me")
-    suspend fun getProfile(): AuthResponse   // reutiliza la respuesta con "usuario"
+    suspend fun getProfile(): AuthResponse
 
     // ----- Alimentos -----
     @GET("api/alimentos")
@@ -33,7 +34,11 @@ interface ApiService {
     @GET("api/alimentos/{id}")
     suspend fun getFoodById(@Path("id") id: Int): FoodDetailResponse
 
-    // ----- Perfil de usuario (opcional, si decides usar usuarios/:id) -----
+    // ----- Health check (opcional) -----
+    @GET("health")
+    suspend fun getHealth(): Response<Map<String, Any>>
+
+    // ----- Actualizar perfil -----
     @PUT("api/usuarios/{id}")
     suspend fun updateProfile(
         @Path("id") userId: Int,
@@ -46,3 +51,4 @@ data class FoodDetailResponse(
     val success: Boolean,
     val data: Food
 )
+
