@@ -31,3 +31,12 @@ data class FoodSearchResponse(
     val count: Int,
     val data: List<Food>
 )
+
+data class FoodResponse(
+    val id: Int,
+    val name: String,
+    val calories: Double,
+    val protein: Double,
+    val carbs: Double,
+    val fat: Double
+)

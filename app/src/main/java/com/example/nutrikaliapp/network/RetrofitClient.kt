@@ -13,7 +13,7 @@ object RetrofitClient {
     // ⚠️ Cambia esta URL según tu entorno:
     // - Emulador estándar: "http://10.0.2.2:3000/"
     // - Dispositivo físico o emulador lento: usa la IP real de tu PC (ej. "http://192.168.1.100:3000/")
-    private const val BASE_URL = "http://localhost:3000/"
+    private const val BASE_URL = "http://192.168.1.73:3000/"
 
     // Interceptor para añadir token JWT
     private val authInterceptor = Interceptor { chain ->

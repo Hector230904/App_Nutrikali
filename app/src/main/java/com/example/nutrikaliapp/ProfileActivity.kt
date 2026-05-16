@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.nutrikaliapp.databinding.ActivityProfileBinding
 import com.example.nutrikaliapp.utils.TokenManager
+import com.example.nutrikaliapp.ProfileActivity
 
 class ProfileActivity : AppCompatActivity() {
 

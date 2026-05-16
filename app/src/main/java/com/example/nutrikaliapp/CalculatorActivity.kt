@@ -4,62 +4,33 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.nutrikaliapp.databinding.ActivityCalculatorBinding
-
-data class FoodItem(
-    val name: String,
-    val calories: Double,      // kcal por 100g
-    val protein: Double,       // proteínas por 100g
-    val carbs: Double,         // carbohidratos por 100g
-    val fat: Double,           // grasas por 100g
-    val unit: String = "100g"
-)
+import com.example.nutrikaliapp.network.RetrofitClient
+import com.example.nutrikaliapp.utils.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
+import java.util.Locale
 
 class CalculatorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCalculatorBinding
-    private lateinit var foodList: List<FoodItem>
-    private var selectedFood: FoodItem? = null
+    private var foodList: List<Food> = emptyList()   // ← cambió de FoodResponse a Food
+    private var selectedFood: Food? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCalculatorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Datos simulados (más completos, como si vinieran de BD)
-        foodList = listOf(
-            FoodItem("Manzana", 52.0, 0.3, 14.0, 0.2),
-            FoodItem("Plátano", 89.0, 1.1, 23.0, 0.3),
-            FoodItem("Pechuga de pollo", 165.0, 31.0, 0.0, 3.6),
-            FoodItem("Arroz blanco", 130.0, 2.7, 28.0, 0.3),
-            FoodItem("Pan integral", 265.0, 9.0, 49.0, 4.0),
-            FoodItem("Huevo", 155.0, 13.0, 1.1, 11.0),
-            FoodItem("Aguacate", 160.0, 2.0, 8.5, 14.7),
-            FoodItem("Brócoli", 34.0, 2.8, 6.6, 0.4),
-            FoodItem("Salmón", 208.0, 20.0, 0.0, 13.0),
-            FoodItem("Quinoa", 120.0, 4.4, 21.3, 1.9)
-        )
+        // Inicializar TokenManager (es un objeto, no hace falta asignarlo a una variable)
+        TokenManager.init(applicationContext)
 
-        // Configurar Spinner
-        val foodNames = foodList.map { it.name }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, foodNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.foodSpinner.adapter = adapter
+        loadFoodsFromApi()
 
-        // Seleccionar primer elemento por defecto
-        selectedFood = foodList.firstOrNull()
-        if (selectedFood != null) {
-            updateNutrientDisplay(selectedFood!!, 100.0)
-        }
-
-        // Listener del Spinner
-        binding.foodSpinner.setOnItemClickListener { _, _, position, _ ->
-            selectedFood = foodList[position]
-            val quantity = binding.quantityEditText.text.toString().toDoubleOrNull() ?: 100.0
-            updateNutrientDisplay(selectedFood!!, quantity)
-        }
-
-        // Botón calcular
         binding.calculateButton.setOnClickListener {
             val quantityText = binding.quantityEditText.text.toString()
             if (quantityText.isEmpty()) {
@@ -81,18 +52,89 @@ class CalculatorActivity : AppCompatActivity() {
             updateNutrientDisplay(food, quantity)
         }
 
-        // Botón de retroceso
-        binding.backButton.setOnClickListener {
-            finish()
-        }
-
-        // Botón usuario
+        binding.backButton.setOnClickListener { finish() }
         binding.userButton.setOnClickListener {
-            Toast.makeText(this, "Perfil (próximamente)", Toast.LENGTH_SHORT).show()
+            startActivity(android.content.Intent(this, ProfileActivity::class.java))
         }
     }
 
-    private fun updateNutrientDisplay(food: FoodItem, quantityGrams: Double) {
+    private fun loadFoodsFromApi() {
+        if (!TokenManager.isLoggedIn()) {
+            Toast.makeText(this, "Sesión no válida", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.progressBar.visibility = android.view.View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.apiService.getFoods(page = 1, limit = 100) // traer hasta 100 alimentos
+                }
+                if (response.success) {
+                    foodList = response.data
+                    withContext(Dispatchers.Main) {
+                        setupSpinner()
+                        binding.progressBar.visibility = android.view.View.GONE
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        binding.progressBar.visibility = android.view.View.GONE
+                        Toast.makeText(this@CalculatorActivity, "Error al cargar alimentos", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: HttpException) {
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = android.view.View.GONE
+                    val errorMsg = if (e.code() == 401) "No autorizado. Inicia sesión nuevamente."
+                    else "Error al cargar alimentos: ${e.message()}"
+                    Toast.makeText(this@CalculatorActivity, errorMsg, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: IOException) {
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = android.view.View.GONE
+                    Toast.makeText(this@CalculatorActivity, "Error de red. Verifica tu conexión.", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.progressBar.visibility = android.view.View.GONE
+                    Toast.makeText(this@CalculatorActivity, "Error inesperado: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun setupSpinner() {
+        if (foodList.isEmpty()) {
+            Toast.makeText(this, "No hay alimentos disponibles", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val foodNames = foodList.map { it.name }  // Food tiene 'name'
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, foodNames)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.foodSpinner.adapter = adapter
+
+        selectedFood = foodList.firstOrNull()
+        if (selectedFood != null) {
+            updateNutrientDisplay(selectedFood!!, 100.0)
+        }
+
+        binding.foodSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                selectedFood = foodList.getOrNull(position)
+                val quantity = binding.quantityEditText.text.toString().toDoubleOrNull() ?: 100.0
+                if (selectedFood != null) {
+                    updateNutrientDisplay(selectedFood!!, quantity)
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
+                selectedFood = null
+            }
+        }
+    }
+
+    private fun updateNutrientDisplay(food: Food, quantityGrams: Double) {
         val factor = quantityGrams / 100.0
         val calories = food.calories * factor
         val protein = food.protein * factor
@@ -102,13 +144,14 @@ class CalculatorActivity : AppCompatActivity() {
         val resultText = buildString {
             appendLine("🍽️ ${food.name}")
             appendLine("──────────────")
-            appendLine("🔥 Calorías: ${String.format("%.1f", calories)} kcal")
-            appendLine("🥩 Proteínas: ${String.format("%.1f", protein)} g")
-            appendLine("🍚 Carbohidratos: ${String.format("%.1f", carbs)} g")
-            appendLine("🧈 Grasas: ${String.format("%.1f", fat)} g")
+            appendLine("🔥 Calorías: ${String.format(Locale.US, "%.1f", calories)} kcal")
+            appendLine("🥩 Proteínas: ${String.format(Locale.US, "%.1f", protein)} g")
+            appendLine("🍚 Carbohidratos: ${String.format(Locale.US, "%.1f", carbs)} g")
+            appendLine("🧈 Grasas: ${String.format(Locale.US, "%.1f", fat)} g")
             appendLine("──────────────")
             appendLine("📊 Porción: $quantityGrams g")
         }
+        // ✅ Usa setText para evitar el error de tipo
         binding.resultTextView.setText(resultText)
     }
 }

@@ -6,7 +6,7 @@ import com.example.nutrikaliapp.FoodsResponse
 import com.example.nutrikaliapp.models.AuthResponse
 import com.example.nutrikaliapp.models.LoginRequest
 import com.example.nutrikaliapp.models.RegisterRequest
-import retrofit2.Response          // ✅ Línea agregada
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -22,7 +22,7 @@ interface ApiService {
     suspend fun getProfile(): AuthResponse
 
     // ----- Alimentos -----
-    @GET("api/alimentos")
+
     suspend fun getFoods(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20
@@ -44,6 +44,8 @@ interface ApiService {
         @Path("id") userId: Int,
         @Body user: Map<String, Any>
     ): AuthResponse
+
+
 }
 
 // Respuesta para un solo alimento

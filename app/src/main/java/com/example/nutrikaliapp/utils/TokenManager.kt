@@ -42,12 +42,13 @@ object TokenManager {
             }
         }
 
-    // Verificar si hay sesión iniciada
+    // Verificar si hay sesión iniciada (solo una vez)
     fun isLoggedIn(): Boolean = !token.isNullOrEmpty()
 
     // Limpiar todo (logout)
     fun clear() {
-        prefs.edit().clear().apply()
+        if (::prefs.isInitialized) {
+            prefs.edit().clear().apply()
+        }
     }
 }
-
