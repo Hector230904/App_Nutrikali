@@ -15,7 +15,6 @@ object TokenManager {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    // Token JWT
     var token: String?
         get() = if (::prefs.isInitialized) prefs.getString(KEY_TOKEN, null) else null
         set(value) {
@@ -24,7 +23,6 @@ object TokenManager {
             }
         }
 
-    // Email del usuario
     var userEmail: String?
         get() = if (::prefs.isInitialized) prefs.getString(KEY_USER_EMAIL, null) else null
         set(value) {
@@ -33,7 +31,6 @@ object TokenManager {
             }
         }
 
-    // Nombre del usuario
     var userName: String?
         get() = if (::prefs.isInitialized) prefs.getString(KEY_USER_NAME, null) else null
         set(value) {
@@ -42,10 +39,8 @@ object TokenManager {
             }
         }
 
-    // Verificar si hay sesión iniciada (solo una vez)
     fun isLoggedIn(): Boolean = !token.isNullOrEmpty()
 
-    // Limpiar todo (logout)
     fun clear() {
         if (::prefs.isInitialized) {
             prefs.edit().clear().apply()

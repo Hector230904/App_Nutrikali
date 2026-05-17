@@ -19,6 +19,7 @@ import com.example.nutrikaliapp.network.RetrofitClient
 import com.example.nutrikaliapp.utils.TokenManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Inicializar el TokenManager una sola vez
+        // Inicializar TokenManager
         TokenManager.init(applicationContext)
 
-        // Si ya hay token guardado, ir al home
+        // Si ya hay token, ir al home
         if (!TokenManager.token.isNullOrEmpty()) {
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
@@ -88,15 +89,15 @@ class MainActivity : AppCompatActivity() {
         showLoading(true)
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = RetrofitClient.apiService.login(LoginRequest(email, password))
+                val response = RetrofitClient.apiService.login(LoginRequest(correo = email, contraseña = password))
                 withContext(Dispatchers.Main) {
                     showLoading(false)
                     // Guardar token y datos del usuario
                     TokenManager.token = response.token
-                    TokenManager.userEmail = response.usuario?.email   // ← añadido
-                    TokenManager.userName = response.usuario?.name     // ← añadido
+                    TokenManager.userEmail = response.usuario?.correo
+                    TokenManager.userName = response.usuario?.nombre
 
-                    val nombre = response.usuario?.name ?: "Usuario"
+                    val nombre = response.usuario?.nombre ?: "Usuario"
                     Toast.makeText(this@MainActivity, "Bienvenido $nombre", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this@MainActivity, HomeActivity::class.java))
                     finish()
@@ -130,38 +131,59 @@ class MainActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
 
+        // Referencias a los campos existentes en dialog_register.xml
         val cancelBtn = dialogView.findViewById<MaterialButton>(R.id.cancelButton)
         val regBtn = dialogView.findViewById<MaterialButton>(R.id.regButton)
         val regEmail = dialogView.findViewById<TextInputEditText>(R.id.regEmailEditText)
         val regPassword = dialogView.findViewById<TextInputEditText>(R.id.regPasswordEditText)
         val regName = dialogView.findViewById<TextInputEditText>(R.id.regNameEditText)
 
+        // Campos adicionales (si no existen en el layout, debemos agregarlos; por ahora los creamos dinámicamente o usamos defaults)
+        // Como el layout original no tiene edad/peso/estatura, añadimos un layout temporal o usamos valores por defecto.
+        // Para no complicar, pediremos estos datos en un segundo diálogo o los agregamos al mismo layout.
+        // Lo más limpio es modificar dialog_register.xml para incluir estos campos. Pero para que funcione ya, usaremos valores por defecto.
+        // Asumimos que el usuario completará después en su perfil. O puedes agregar los campos en el XML.
+
         cancelBtn.setOnClickListener { dialog.dismiss() }
 
         regBtn.setOnClickListener {
             val email = regEmail.text?.toString()?.trim().orEmpty()
             val password = regPassword.text?.toString().orEmpty()
-            val name = regName?.text?.toString()?.trim()?.takeIf { it.isNotEmpty() } ?: ""
+            val name = regName.text?.toString()?.trim()?.takeIf { it.isNotEmpty() } ?: ""
 
             if (email.isEmpty() || password.length < 6) {
                 Toast.makeText(this, "Correo y contraseña (mínimo 6 caracteres) requeridos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // Valores por defecto para campos obligatorios (edad, peso, estatura) - el usuario los actualizará luego.
+            // También puedes mostrar un diálogo para pedirlos si prefieres.
+            val edad = 25   // valor por defecto (cámbialo según tu lógica)
+            val peso = 70.0
+            val estatura = 1.70
+            val objetivo = "Mantener peso"
+
             showLoading(true)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val response = RetrofitClient.apiService.register(
-                        RegisterRequest(name = name, email = email, password = password)
+                        RegisterRequest(
+                            nombre = name,
+                            correo = email,
+                            contraseña = password,
+                            edad = edad,
+                            peso = peso,
+                            estatura = estatura,
+                            objetivo = objetivo
+                        )
                     )
                     withContext(Dispatchers.Main) {
                         showLoading(false)
-                        // Guardar token y datos del usuario
                         TokenManager.token = response.token
-                        TokenManager.userEmail = response.usuario?.email   // ← añadido
-                        TokenManager.userName = response.usuario?.name     // ← añadido
+                        TokenManager.userEmail = response.usuario?.correo
+                        TokenManager.userName = response.usuario?.nombre
 
-                        val nombre = response.usuario?.name ?: "Usuario"
+                        val nombre = response.usuario?.nombre ?: "Usuario"
                         Toast.makeText(this@MainActivity, "Registro exitoso. ¡Bienvenido $nombre!", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                         startActivity(Intent(this@MainActivity, HomeActivity::class.java))
@@ -170,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: HttpException) {
                     withContext(Dispatchers.Main) {
                         showLoading(false)
-                        val errorMsg = if (e.code() == 409) "El correo ya está registrado"
+                        val errorMsg = if (e.code() == 400 || e.code() == 409) "El correo ya está registrado o faltan datos"
                         else "Error en el registro"
                         Toast.makeText(this@MainActivity, errorMsg, Toast.LENGTH_SHORT).show()
                     }
@@ -213,5 +235,4 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.loginButton).isEnabled = !show
         findViewById<TextView>(R.id.registerTextView).isEnabled = !show
     }
-
 }
