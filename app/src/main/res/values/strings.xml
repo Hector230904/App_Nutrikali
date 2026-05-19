@@ -46,18 +46,19 @@
     <string name="diets_btn">Dietas</string>
     <string name="profile_btn">Calendario</string>
 
-
-
-    <string name="search_results_title">🔍 %s</string>
-    <string name="no_search_results">No se encontraron alimentos con "%s"</string>
-    <string name="nutrition_info">Información por 100g</string>
+    <!-- food -->
+    <!-- ... otros strings ... -->
+    <string name="diets_title">DIETAS</string>
+    <string name="search_results_title">Resultados para: %s</string>
+    <string name="error_loading_foods">Error al cargar alimentos</string>
+    <string name="error_network">Error de red</string>
+    <string name="no_search_results">No se encontraron resultados para: %s</string>
+    <string name="nutrition_info">Información nutricional completa</string>
     <string name="food_details_title">Detalles del alimento</string>
     <string name="accept">Aceptar</string>
 
 
-    <string name="diets_title">DIETAS</string>
-    <string name="error_loading_foods">Error al cargar alimentos</string>
-    <string name="error_network">Error de red</string>
+
 
 
     <!-- ==================== TEXTO DE EJEMPLO (LOREM) ==================== -->
