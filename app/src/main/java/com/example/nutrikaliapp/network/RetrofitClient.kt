@@ -1,63 +1,55 @@
 package com.example.nutrikaliapp.network
 
-import android.util.Log   // ✅ Importación necesaria
-import com.example.nutrikaliapp.utils.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.example.nutrikaliapp.utils.TokenManager
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // ⚠️ Cambia esta URL según tu entorno:
-    // - Emulador estándar: "http://10.0.2.2:3000/"
-    // - Dispositivo físico o emulador lento: usa la IP real de tu PC (ej. "http://192.168.1.100:3000/")
-    private const val BASE_URL = "http://192.168.1.71:3000/"
+    // Cambia esta URL según corresponda:
+    // - Emulador: "http://10.0.2.2:3000/"
+    // - Dispositivo físico: "http://TU_IP_LOCAL:3000/"
+    // - Producción: "https://tudominio.com/"
+    private const val BASE_URL = "http://192.168.100.92:3000/"  // Para emulador Android Studio
 
-    // Interceptor para añadir token JWT
+    // Interceptor para agregar el token a cada petición
     private val authInterceptor = Interceptor { chain ->
-        val originalRequest = chain.request()
         val token = TokenManager.token
-        val request = if (token != null) {
-            originalRequest.newBuilder()
-                .header("Authorization", "Bearer $token")
-                .build()
-        } else {
-            originalRequest
-        }
+        val request = chain.request().newBuilder()
+            .addHeader("Content-Type", "application/json")
+            .apply {
+                if (!token.isNullOrEmpty()) {
+                    addHeader("Authorization", "Bearer $token")
+                }
+            }
+            .build()
         chain.proceed(request)
     }
 
-    // Interceptor de logs (útil para depurar)
+    // Interceptor para logging (debug)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    // Cliente OkHttp único y bien configurado
+    // Cliente OkHttp con interceptores
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
-        .addInterceptor { chain ->
-            val request = chain.request()
-            try {
-                chain.proceed(request)
-            } catch (e: Exception) {
-                Log.e("Retrofit", "Request failed: ${request.url}", e)
-                throw e
-            }
-        }
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .client(okHttpClient)
-        .build()
-
-    val apiService: ApiService = retrofit.create(ApiService::class.java)
+    // Instancia de Retrofit
+    val apiService: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
 }
