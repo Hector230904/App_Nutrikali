@@ -16,13 +16,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NutrikaliApp">
+        android:theme="@style/Theme.NutrikaliApp"
+        android:usesCleartextTraffic="true"
+        >
+
 
 
         <activity android:name=".CalculatorActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".CalendarActivity" />
         <activity android:name=".DietsActivity" />
+        <activity android:name=".SettingsActivity" />
 
 
         

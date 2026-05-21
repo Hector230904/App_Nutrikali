@@ -140,7 +140,7 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
 
-                    <!-- Display de resultado -->
+                    <!-- Display de resultado (multilínea) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -154,11 +154,13 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="0.0 kcal"
-                            android:textSize="24sp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             android:textColor="#383939"
                             android:inputType="none"
-                            android:background="@android:color/transparent" />
+                            android:background="@android:color/transparent"
+                            android:minLines="6"
+                            android:gravity="top" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Entrada de cantidad -->
@@ -186,6 +188,31 @@
                             android:textSize="18sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- NUEVO: Campo de peso del individuo -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Peso (kg)"
+                        android:textColor="#149C68"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="#149C68"
+                        android:layout_marginBottom="16dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/weightEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:text="70"
+                            android:textSize="18sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -205,7 +232,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ProgressBar de carga centrado sobre -->
+    <!-- ProgressBar de carga -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="48dp"

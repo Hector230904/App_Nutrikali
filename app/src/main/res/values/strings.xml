@@ -57,6 +57,27 @@
     <string name="food_details_title">Detalles del alimento</string>
     <string name="accept">Aceptar</string>
 
+    <!-- Strings existentes... -->
+    <string name="volver">Volver</string>
+    <string name="ajustes">AJUSTES</string>
+    <string name="apariencia">Apariencia</string>
+    <string name="tema_color">Tema de color</string>
+    <string name="verde">Verde</string>
+    <string name="azul">Azul</string>
+    <string name="naranja">Naranja</string>
+    <string name="tamano_texto">Tamaño de texto</string>
+    <string name="vista_previa_texto">Vista previa del texto</string>
+    <string name="notificaciones">Notificaciones</string>
+    <string name="recordatorios_diarios">Recordatorios diarios</string>
+    <string name="sonidos">Sonidos</string>
+    <string name="acerca_de">Acerca de</string>
+    <string name="app_version">NutriKali App v1.0</string>
+    <string name="copyright">© 2025 - Tu aliado en nutrición</string>
+    <string name="guardar_cambios">GUARDAR CAMBIOS</string>
+    <string name="configuracion_guardada">Configuración guardada</string>
+
+
+
 
 
 

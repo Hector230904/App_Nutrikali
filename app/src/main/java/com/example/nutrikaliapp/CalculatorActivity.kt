@@ -18,7 +18,7 @@ import java.util.Locale
 class CalculatorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCalculatorBinding
-    private var foodList: List<Food> = emptyList()   // ← cambió de FoodResponse a Food
+    private var foodList: List<Food> = emptyList()
     private var selectedFood: Food? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,13 +26,14 @@ class CalculatorActivity : AppCompatActivity() {
         binding = ActivityCalculatorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inicializar TokenManager (es un objeto, no hace falta asignarlo a una variable)
         TokenManager.init(applicationContext)
 
         loadFoodsFromApi()
 
         binding.calculateButton.setOnClickListener {
             val quantityText = binding.quantityEditText.text.toString()
+            val weightText = binding.weightEditText.text.toString()
+
             if (quantityText.isEmpty()) {
                 Toast.makeText(this, "Ingresa la cantidad", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -43,13 +44,19 @@ class CalculatorActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val weight = weightText.toDoubleOrNull()
+            if (weight == null || weight <= 0) {
+                Toast.makeText(this, "Peso no válido", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val food = selectedFood
             if (food == null) {
                 Toast.makeText(this, "Selecciona un alimento", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            updateNutrientDisplay(food, quantity)
+            updateNutrientDisplay(food, quantity, weight)
         }
 
         binding.backButton.setOnClickListener { finish() }
@@ -69,7 +76,7 @@ class CalculatorActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.apiService.getFoods(page = 1, limit = 100) // traer hasta 100 alimentos
+                    RetrofitClient.apiService.getFoods(page = 1, limit = 100)
                 }
                 if (response.success) {
                     foodList = response.data
@@ -110,22 +117,24 @@ class CalculatorActivity : AppCompatActivity() {
             return
         }
 
-        val foodNames = foodList.map { it.name }  // Food tiene 'name'
+        val foodNames = foodList.map { it.name }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, foodNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.foodSpinner.adapter = adapter
 
         selectedFood = foodList.firstOrNull()
         if (selectedFood != null) {
-            updateNutrientDisplay(selectedFood!!, 100.0)
+            // Mostrar valores por defecto con cantidad 100g y peso 70kg
+            updateNutrientDisplay(selectedFood!!, 100.0, 70.0)
         }
 
         binding.foodSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
                 selectedFood = foodList.getOrNull(position)
                 val quantity = binding.quantityEditText.text.toString().toDoubleOrNull() ?: 100.0
+                val weight = binding.weightEditText.text.toString().toDoubleOrNull() ?: 70.0
                 if (selectedFood != null) {
-                    updateNutrientDisplay(selectedFood!!, quantity)
+                    updateNutrientDisplay(selectedFood!!, quantity, weight)
                 }
             }
             override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
@@ -134,12 +143,15 @@ class CalculatorActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateNutrientDisplay(food: Food, quantityGrams: Double) {
+    private fun updateNutrientDisplay(food: Food, quantityGrams: Double, userWeightKg: Double) {
         val factor = quantityGrams / 100.0
         val calories = food.calories * factor
         val protein = food.protein * factor
         val carbs = food.carbs * factor
         val fat = food.fat * factor
+
+        // Proteína por kg de peso corporal
+        val proteinPerKg = protein / userWeightKg
 
         val resultText = buildString {
             appendLine("🍽️ ${food.name}")
@@ -150,8 +162,9 @@ class CalculatorActivity : AppCompatActivity() {
             appendLine("🧈 Grasas: ${String.format(Locale.US, "%.1f", fat)} g")
             appendLine("──────────────")
             appendLine("📊 Porción: $quantityGrams g")
+            appendLine("⚖️ Peso: ${String.format(Locale.US, "%.1f", userWeightKg)} kg")
+            appendLine("🥩 Proteína / kg: ${String.format(Locale.US, "%.2f", proteinPerKg)} g/kg")
         }
-        // ✅ Usa setText para evitar el error de tipo
         binding.resultTextView.setText(resultText)
     }
 }
