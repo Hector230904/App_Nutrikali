@@ -1,18 +1,10 @@
 package com.example.nutrikaliapp.adapters
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-//import coil.load     --- clase sin funcion
 import com.example.nutrikaliapp.Food
 import com.example.nutrikaliapp.databinding.ItemFoodBinding
-import com.example.nutrikaliapp.utils.ImageUrlCache
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 class FoodAdapter(
     private var foods: List<Food>,
@@ -42,19 +34,16 @@ class FoodAdapter(
         private val onItemClick: (Food) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        // Scope propio para tareas asíncronas (no afecta a la actividad)
-        private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
         fun bind(food: Food) {
-            // ---- Texto (igual que antes) ----
             binding.foodNameTextView.text = food.name
             binding.caloriesTextView.text = "${food.calories} kcal"
             binding.proteinTextView.text = "${food.protein} g"
             binding.carbsTextView.text = "${food.carbs} g"
             binding.fatTextView.text = "${food.fat} g"
 
-            // ---- Imagen (nuevo) ---- colocar el codigo de whatsapp
-
+            binding.root.setOnClickListener {
+                onItemClick(food)
+            }
         }
     }
 }

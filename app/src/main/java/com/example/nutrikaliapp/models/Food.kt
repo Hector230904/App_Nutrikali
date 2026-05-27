@@ -8,13 +8,10 @@ data class Food(
     @SerializedName("calorias") val calories: Double,
     @SerializedName("proteinas") val protein: Double,
     @SerializedName("carbohidratos") val carbs: Double,
-    @SerializedName("grasas") val fat: Double,
-    @SerializedName("imagen_key") val imageKey: String? = null,
-    var imageUrl: String? = null
+    @SerializedName("grasas") val fat: Double
 )
 
-
-// Wrappers de respuesta (paginada y búsqueda)
+// Wrappers de respuesta
 data class FoodsResponse(
     val success: Boolean,
     val data: List<Food>,
@@ -42,10 +39,3 @@ data class FoodResponse(
     val carbs: Double,
     val fat: Double
 )
-
-data class ImageUrlResponse(
-    val success: Boolean,
-    val imageUrl: String,
-    val fileKey: String
-)
-
