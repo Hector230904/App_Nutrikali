@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="gender_options">
+        <item>Hombre</item>
+        <item>Mujer</item>
+    </string-array>
+    <string-array name="activity_options">
+        <item>Sedentario (poco o ningún ejercicio)</item>
+        <item>Ligero (1-3 días/semana)</item>
+        <item>Moderado (3-5 días/semana)</item>
+        <item>Activo (6-7 días/semana)</item>
+        <item>Muy activo (entrenamiento diario intenso)</item>
+    </string-array>
+    <string-array name="goal_options">
+        <item>Perder peso</item>
+        <item>Mantener peso</item>
+        <item>Ganar peso</item>
+    </string-array>
+</resources>

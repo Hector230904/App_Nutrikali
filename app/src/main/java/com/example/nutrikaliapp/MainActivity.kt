@@ -36,17 +36,14 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Inicializar TokenManager
         TokenManager.init(applicationContext)
 
-        // Si ya hay token, ir al home
         if (!TokenManager.token.isNullOrEmpty()) {
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
             return
         }
 
-        // Ajuste de insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.container)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -92,10 +89,14 @@ class MainActivity : AppCompatActivity() {
                 val response = RetrofitClient.apiService.login(LoginRequest(correo = email, contraseña = password))
                 withContext(Dispatchers.Main) {
                     showLoading(false)
-                    // Guardar token y datos del usuario
                     TokenManager.token = response.token
                     TokenManager.userEmail = response.usuario?.correo
                     TokenManager.userName = response.usuario?.nombre
+
+                    // Guardar el objeto usuario completo
+                    response.usuario?.let { user ->
+                        TokenManager.saveUser(user)
+                    }
 
                     val nombre = response.usuario?.nombre ?: "Usuario"
                     Toast.makeText(this@MainActivity, "Bienvenido $nombre", Toast.LENGTH_SHORT).show()
@@ -131,18 +132,11 @@ class MainActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
 
-        // Referencias a los campos existentes en dialog_register.xml
         val cancelBtn = dialogView.findViewById<MaterialButton>(R.id.cancelButton)
         val regBtn = dialogView.findViewById<MaterialButton>(R.id.regButton)
         val regEmail = dialogView.findViewById<TextInputEditText>(R.id.regEmailEditText)
         val regPassword = dialogView.findViewById<TextInputEditText>(R.id.regPasswordEditText)
         val regName = dialogView.findViewById<TextInputEditText>(R.id.regNameEditText)
-
-        // Campos adicionales (si no existen en el layout, debemos agregarlos; por ahora los creamos dinámicamente o usamos defaults)
-        // Como el layout original no tiene edad/peso/estatura, añadimos un layout temporal o usamos valores por defecto.
-        // Para no complicar, pediremos estos datos en un segundo diálogo o los agregamos al mismo layout.
-        // Lo más limpio es modificar dialog_register.xml para incluir estos campos. Pero para que funcione ya, usaremos valores por defecto.
-        // Asumimos que el usuario completará después en su perfil. O puedes agregar los campos en el XML.
 
         cancelBtn.setOnClickListener { dialog.dismiss() }
 
@@ -156,9 +150,8 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Valores por defecto para campos obligatorios (edad, peso, estatura) - el usuario los actualizará luego.
-            // También puedes mostrar un diálogo para pedirlos si prefieres.
-            val edad = 25   // valor por defecto (cámbialo según tu lógica)
+            // Valores por defecto (el usuario los actualizará después en su perfil)
+            val edad = 25
             val peso = 70.0
             val estatura = 1.70
             val objetivo = "Mantener peso"
@@ -182,6 +175,11 @@ class MainActivity : AppCompatActivity() {
                         TokenManager.token = response.token
                         TokenManager.userEmail = response.usuario?.correo
                         TokenManager.userName = response.usuario?.nombre
+
+                        // Guardar el objeto usuario completo
+                        response.usuario?.let { user ->
+                            TokenManager.saveUser(user)
+                        }
 
                         val nombre = response.usuario?.nombre ?: "Usuario"
                         Toast.makeText(this@MainActivity, "Registro exitoso. ¡Bienvenido $nombre!", Toast.LENGTH_SHORT).show()
